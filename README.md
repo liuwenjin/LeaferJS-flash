@@ -1,45 +1,137 @@
-# LeaferJS Flash · 2D 动画短片生成器
+# LeaferJS Flash
 
-> 把一句自然语言描述，变成一段 **12–20 秒、打开即播、可暂停可重播** 的 2D 动画短片。
-> 交付物是严格 JSON 协议里的单文件 HTML，由 [LeaferJS](https://www.leaferjs.com/) 驱动，无需构建、无需素材。
+**可独立运行的 2D 动画短片生成器**
 
+> 一句自然语言描述，得到一段 **12–20 秒、打开即播、可暂停可重播** 的 2D 动画短片。
+> 自带任意大模型即可运行；产物是零依赖的单文件 HTML。
+
+![BYOM](https://img.shields.io/badge/model-any%20LLM-6f5cff)
 ![LeaferJS](https://img.shields.io/badge/LeaferJS-2.3.4-6f5cff)
 ![Single File](https://img.shields.io/badge/output-single--file%20HTML-2ea44f)
 ![No Build](https://img.shields.io/badge/build-none-lightgrey)
 
 ---
 
-## 这是什么
+## 简介
 
-本仓库是一套**面向大模型的动画生成提示词**（`appPrompt.md`）及其配套页面。它把模型变成一个「电影级 2D 动画短片团队」：
+**LeaferJS Flash 是一个可独立运行的 AI 工具**，不是某个平台的插件，也不需要登录任何账号。
 
-- **动画导演**：故事、情绪曲线、节奏、最后一个记忆画面
-- **分镜与摄影指导**：景别、构图、镜头运动、焦点、镜头衔接
-- **角色动画师**：关键姿态、预备、跟随、重叠、次级动作
-- **场景美术与灯光**：色彩、光源、空间层次、气氛、材质
-- **LeaferJS 技术导演**：场景树、时间轴、虚拟镜头、视差、性能、兜底
-- **QA**：播放、暂停、重播、拖动、手机端与真实浏览器验收
+它的全部能力来自一份系统提示词 [`appPrompt.md`](./appPrompt.md)：把这份提示词交给任意支持长输出的 LLM，模型就会把你的描述变成一部电影感 2D 动画，并以严格 JSON 交付。取 JSON 里的 `code` 字段保存为 `.html`，双击就能播放。
 
-模型只输出一个 JSON 对象，其中 `code` 字段是完整的、可直接在浏览器打开的单文件 HTML。**不是游戏**：没有玩家操作、得分、碰撞或关卡，观众是来看表演的。
+```text
+你的描述 ──► 任意 LLM ──► JSON ──► animation.html ──► 浏览器
+                ▲
+          appPrompt.md
+```
 
-## 在线体验
+工具链上没有隐藏服务：没有后端、没有数据库、没有构建步骤。你需要的只是一个模型端点（云端 API 或本地模型）和一个浏览器。
 
-- 平台内体验：<https://transweb.cn/agent.html?id=1bb714f792cb885ffbfd3611e8b69dc3>
-- 本仓库的 `appPage.html` 以 `iframe` 嵌入同一在线应用，可直接用浏览器打开。
+## 为什么它可以独立运行
 
-## 核心特性
-
-| 能力 | 说明 |
+| 维度 | 说明 |
 | --- | --- |
-| 完整叙事 | 12–20 秒内完成「建立 → 发展 → 转折 → 高潮 → 收束」 |
-| 电影化镜头 | 3–5 个镜头，各有明确任务；虚拟镜头推进 / 拉回 / 跟随 |
-| 角色表演 | 以关键姿态驱动，带预备、跟随、回弹与次级动作延迟 |
-| 分层视差 | 场景、主体、前景、光效分层，制造纵深 |
-| 播放控制 | 自动播放、暂停、继续、重播、进度条点击/拖动、键盘控制 |
-| 自适应画幅 | 16:9 电影式信箱画幅等比缩放居中，竖屏不裁切主体 |
-| 纯时间函数 | `renderAt(t)` 由时间轴驱动，暂停/拖动/跳帧状态一致 |
-| 零外部素材 | 图形全部程序化生成，不使用图片、字体、音频文件 |
-| 错误兜底 | CDN 加载失败或初始化异常时显示错误面板，不白屏 |
+| **模型自由** | OpenAI、DeepSeek、Claude、Gemini、Ollama、vLLM 均可；只要支持 system prompt 与长输出 |
+| **无平台锁定** | 不调用 transweb.cn 或任何私有接口；平台页面只是同款提示词的参考实现 |
+| **本地执行** | 提示词、调用脚本、产物都在你的机器上；使用本地模型时可完全离线生成 |
+| **产物可移植** | 输出是单个 `.html` 文件，可双击打开、邮件发送、静态托管或嵌入 iframe |
+| **过程可审计** | 提示词、协议和生成结果全部可见，可 diff、可版本化、可二次修改 |
+
+## 它生成什么
+
+一部完整的短片，而不是几张会动的图：
+
+- **叙事完整**：12–20 秒内完成「建立 → 发展 → 转折 → 高潮 → 收束」
+- **电影化镜头**：3–5 个镜头，各有明确任务；支持推进、拉回、跟随与分层视差
+- **角色表演**：关键姿态驱动，带预备、跟随、回弹和次级动作延迟
+- **可交互播放**：自动播放、暂停、继续、重播、进度条拖动、键盘控制
+- **自适应画幅**：16:9 电影式信箱画幅等比居中，竖屏不裁切主体
+- **程序化美术**：不使用图片、字体、音频文件，画面全部由 LeaferJS 图形构成
+- **错误兜底**：CDN 加载失败或初始化异常时显示错误面板，不白屏
+
+## 快速开始（独立运行）
+
+### 前置条件
+
+- Node.js 18+（内置 `fetch`，无需 `npm install`）
+- 一个 OpenAI 兼容的模型端点；建议单次输出上限 **≥ 8K tokens**
+
+### 1. 获取工具
+
+```bash
+git clone https://github.com/liuwenjin/LeaferJS-flash.git
+cd LeaferJS-flash
+```
+
+### 2. 创建本地运行器
+
+把下面的代码保存为 `run.mjs`（放在仓库根目录）：
+
+> 不想用 Node.js？任何 HTTP 客户端都可以：把 `appPrompt.md` 作为 system message、需求作为 user message 发送，再解析返回的 JSON。
+
+```js
+// run.mjs — Node.js 18+，零依赖
+import fs from 'node:fs';
+
+const system = fs.readFileSync('appPrompt.md', 'utf8');
+const idea = process.argv.slice(2).join(' ') || '一只纸鹤穿过暮色，飞向月亮。';
+const base = (process.env.LLM_BASE_URL || 'https://api.deepseek.com').replace(/\/$/, '');
+
+const res = await fetch(`${base}/chat/completions`, {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    Authorization: `Bearer ${process.env.LLM_API_KEY}`
+  },
+  body: JSON.stringify({
+    model: process.env.LLM_MODEL || 'deepseek-chat',
+    messages: [
+      { role: 'system', content: system },
+      { role: 'user', content: idea }
+    ],
+    max_tokens: Number(process.env.LLM_MAX_TOKENS || 8000),
+    temperature: 0.7
+  })
+});
+
+if (!res.ok) throw new Error(`HTTP ${res.status}: ${await res.text()}`);
+const body = await res.json();
+if (body.choices?.[0]?.finish_reason === 'length') {
+  throw new Error('输出被截断：请提高 LLM_MAX_TOKENS，或换用输出上限更大的模型');
+}
+
+const raw = body.choices[0].message.content.trim()
+  .replace(/^`{3}(?:json)?\s*/, '')
+  .replace(/\s*`{3}$/, '');
+const data = JSON.parse(raw);
+fs.writeFileSync('animation.html', data.code, 'utf8');
+console.log(`✓ ${data.title} → animation.html（${data.code.split('\n').length} 行）`);
+```
+
+### 3. 生成并播放
+
+```bash
+LLM_API_KEY=sk-... node run.mjs "一只发光的鲸鱼在深海中缓缓游过，身后拖着星尘，最后消失在光里"
+open animation.html     # macOS；其他系统直接双击
+```
+
+页面加载 LeaferJS 后自动播放。动画产物本身不需要 Node.js，也不需要这个运行器。
+
+### 4. 换一个模型
+
+| 服务 | `LLM_BASE_URL` | `LLM_MODEL` 示例 |
+| --- | --- | --- |
+| OpenAI | `https://api.openai.com/v1` | `gpt-4.1` |
+| DeepSeek | `https://api.deepseek.com` | `deepseek-chat` |
+| Ollama（本地） | `http://localhost:11434/v1` | `qwen2.5:14b` |
+| vLLM（本地） | `http://localhost:8000/v1` | 你部署的模型名 |
+| 其他网关 | 任意 OpenAI 兼容地址 | 以服务商文档为准 |
+
+```bash
+LLM_BASE_URL=https://api.openai.com/v1 LLM_MODEL=gpt-4.1 \
+LLM_API_KEY=sk-... node run.mjs "雨夜里，一只猫跳上屋顶，追逐一盏飘走的天灯"
+```
+
+> Claude、Gemini 的原生 API 协议不同，可通过 OpenAI 兼容网关接入，或自行替换运行器中的请求部分。模型不是工具的一部分，可随时替换。
 
 ## 交付协议（硬约束）
 
@@ -80,65 +172,42 @@
 
 ## 技术栈
 
-- **运行时**：原生 HTML / CSS / JavaScript，单个 `index.html` 形态，无打包、无框架、无 `import` / `require`
-- **渲染引擎**：`LeaferJS 2.3.4`，唯一 CDN 依赖
-  `https://unpkg.com/leafer-ui@2.3.4/dist/web.min.js`
-- **动画驱动**：`requestAnimationFrame` + 手动时间轴（不使用 Leafer 的 `animate()` 或动画插件）
-- **画布初始化**：`new L.Leafer({ view: window, type: 'draw', ... })`，关闭默认视窗缩放/平移
-- **自适应**：设计分辨率 `960 × 540`（或 `1280 × 720`），`stage` 等比缩放居中，每帧检测窗口尺寸
-- **性能约定**：节点数受控、粒子固定池、渐变初始化时创建、不每帧增删节点
+| 层 | 选型 |
+| --- | --- |
+| 生成引擎 | `appPrompt.md`（系统提示词）+ 任意 LLM |
+| 运行器 | 约 40 行 Node.js 脚本，仅用内置 `fetch` |
+| 渲染引擎 | LeaferJS 2.3.4（唯一 CDN 依赖） |
+| 动画驱动 | `requestAnimationFrame` + 手动时间轴 |
+| 画布 | `new L.Leafer({ view: window, type: 'draw', ... })`，关闭默认缩放/平移 |
+| 自适应 | 设计分辨率 960×540，`stage` 等比缩放居中，每帧检测窗口尺寸 |
+| 产物 | 单文件 HTML，无构建、无框架、无 `import` / `require` |
 
-## 快速开始
+LeaferJS 只允许引入一次：
 
-### 1. 准备提示词
-
-将 [`appPrompt.md`](./appPrompt.md) 全文作为**系统提示词**（System Prompt）交给支持长输出的模型。它包含角色设定、交付格式、转义规则、运行时契约、动画设计标准和一个完整示例。
-
-### 2. 提出需求
-
-用一句自然语言描述你想要的短片，例如：
-
-> 一只发光的鲸鱼在深海中缓缓游过，身后拖着星尘，最后消失在光里。
-
-提示词明确要求模型**不要反问、不要输出设计过程**，自行完成分镜与实现决策。
-
-### 3. 解析 JSON 并落盘
-
-模型返回后，取 `code` 字段保存为 `.html` 文件（Node.js 示例）：
-
-```js
-const fs = require('fs');
-const data = JSON.parse(responseText);
-fs.writeFileSync('animation.html', data.code, 'utf8');
-console.log(data.title, data.description);
+```text
+https://unpkg.com/leafer-ui@2.3.4/dist/web.min.js
 ```
-
-### 4. 在浏览器中打开
-
-直接双击 `animation.html`，或用任意静态服务器托管。页面加载 LeaferJS CDN 后自动播放；离线环境会显示错误面板。
-
-> 提示：模型输出被截断是常见失败模式。请把最大输出 token 调高，并优先保证 `</html>` 完整闭合。
 
 ## 目录结构
 
 ```text
 LeaferJS-flash/
+├── appPrompt.md     # 工具引擎：完整系统提示词（必需）
 ├── README.md        # 本文件
-├── appPrompt.md     # 完整提示词（角色、协议、运行时契约、示例）
-├── appCode.vue      # 平台端 Vue 单文件组件（在线应用的 UI 壳）
-├── appPage.html     # iframe 嵌入页，指向 transweb.cn 在线应用
-└── manifest.json    # 应用元数据与来源
+├── appCode.vue      # 可选参考实现：平台端 UI（独立运行不需要）
+├── appPage.html     # 可选参考实现：iframe 嵌入页
+└── manifest.json    # 元数据
 ```
 
-说明：`appCode.vue` 是平台侧的交互界面（对话、历史、下载等），**不是**动画产物本身；动画产物由提示词生成在 JSON 的 `code` 字段中。
+`run.mjs` 不在仓库内，按「快速开始」创建即可；`appCode.vue` 与 `appPage.html` 只是同款提示词在 transweb.cn 上的 Web 外壳，**不参与**独立运行链路，删掉它们不影响工具使用。
 
 ## 提示词设计要点
 
 - **格式优先于内容**：JSON 不合法，动画再好也是 0 分。
 - **可运行优先于炫技**：能完整播放一遍，胜过画面复杂但跑不起来。
-- **一个清晰视觉叙事**胜过十个互不相干的特效：一个场景、一个主体、一个核心想法。
+- **一个清晰的视觉叙事**胜过十个互不相干的特效：一个场景、一个主体、一个核心想法。
 - 输出前按 12 条清单机械自检，并在脑内播放一遍完整流程。
-- 篇幅预算 400–850 行，预算不足时按 `P2 → P1 → 不降 P0` 降级，优先补完「结尾」和「重播」闭环。
+- 篇幅预算 400–850 行；预算不足时按 `P2 → P1 → 不降 P0` 降级，优先补完结尾与重播闭环。
 
 ## 交付验收清单
 
@@ -155,17 +224,30 @@ LeaferJS-flash/
 - [ ] 主体在远景、近景、高潮镜头中都清晰可读
 - [ ] 至少有一个值得截图的记忆画面
 
-## 已知限制
+## 常见问题
 
-- 依赖 `unpkg.com` CDN，离线或网络受限时需要自建镜像并替换脚本地址。
-- 单次生成篇幅较长（400–850 行），小上下文模型容易截断。
-- 提示词内示例（纸鹤 · 夜航）只用于学习格式与工程结构，不应照抄主题与数值。
+**必须联网吗？**
+生成阶段需要访问模型；播放阶段需要加载 LeaferJS CDN。要完全离线，可下载 `web.min.js` 到本地并替换产物里的脚本地址，再配合本地模型使用。
+
+**输出被截断怎么办？**
+优先提高 `LLM_MAX_TOKENS`，或换用输出上限更大的模型。提示词已经要求模型在预算内优先保证 `</html>` 完整闭合。
+
+**会保存我的数据吗？**
+仓库没有后端。请求由你的运行器直接发往你选择的模型服务商；是否留存数据取决于该服务商的策略。
+
+**可以商用吗？**
+本仓库暂未声明许可证。提示词与生成代码的版权归各自作者所有，商用前请自行确认授权范围。
+
+## 参考实现（可选）
+
+- 在线效果参考：<https://transweb.cn/agent.html?id=1bb714f792cb885ffbfd3611e8b69dc3>
+- `appPage.html` 通过 iframe 嵌入同一在线版本；它只用于预览，不是运行本工具的必要条件。
 
 ## 相关链接
 
 - LeaferJS 官网：<https://www.leaferjs.com/>
 - LeaferJS 文档：<https://www.leaferjs.com/ui/guide/>
-- 在线应用：<https://transweb.cn/agent.html?id=1bb714f792cb885ffbfd3611e8b69dc3>
+- 本仓库：<https://github.com/liuwenjin/LeaferJS-flash>
 
 ## 许可
 
